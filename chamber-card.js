@@ -123,8 +123,9 @@ class ChamberCard extends LitElement {
         display: grid;
         grid-template-rows: auto 1fr auto;
         grid-template-columns: 2fr 1fr;
+        container-type: size;
         padding: 1%;
-        font-family: Arial, sans-serif;
+        font-family: var(--paper-font-body1_-_font-family, var(--primary-font-family));
         height: 100%;
         box-sizing: border-box;
         aspect-ratio: 1 / 1;
@@ -148,52 +149,115 @@ class ChamberCard extends LitElement {
         bottom: 28%;
         padding-left: 6%;
         padding-top: 4%;
+        padding-right: 5%;
+        padding-bottom: 2.8%;
+        overflow: hidden;
       }
       .header.compact-layout {
         bottom: 0;
+        padding-right: 6%;
+        padding-bottom: 3.8%;
       }
       .chamber-caption-text {
         font-weight: bold;
-        font-size: 1.1em;
+        font-size: clamp(0.92rem, 7.8cqi, 1.24rem);
+        line-height: 1.15;
         letter-spacing: 0.015em;
         text-align: left;
         width: 100%;
+        box-sizing: border-box;
+      }
+      .header-content {
+        flex: 1 1 auto;
+        min-height: 0;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
       }
       .chamber-condition-text {
-        font-size: 0.75em;
+        font-size: clamp(0.72rem, 5.8cqi, 1rem);
+        line-height: 1.25;
         color: rgba(221, 221, 221, 0.35);
         font-weight: bold;
         max-width: 100%;
-        margin-top: -0.25em;
+        margin-top: 0.1em;
         letter-spacing: 0.015em;
-        white-space: nowrap;
+        width: 100%;
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2em;
+        overflow: hidden;
+        white-space: normal;
+        text-align: left;
+      }
+      .header.compact-layout .chamber-condition-text {
+        font-size: clamp(0.64rem, 5.1cqi, 0.92rem);
+        line-height: 1.18;
+        gap: 0.14em;
+      }
+      .description-line {
+        flex: 0 0 auto;
+        max-width: 100%;
         overflow: hidden;
         text-overflow: ellipsis;
-        text-align: left;
+        white-space: nowrap;
+      }
+      .metrics-slot {
+        flex: 1 1 auto;
+        min-height: 0.6em;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
       }
       .metric-list {
         display: flex;
         flex-direction: column;
         gap: 0.15em;
+        max-width: 100%;
+        overflow: hidden;
+      }
+      .header.compact-layout .metric-list {
+        gap: 0.08em;
       }
       .metric-row {
         display: flex;
         align-items: center;
         gap: 0.35em;
+        min-height: 0;
+        max-width: 100%;
+        overflow: hidden;
+      }
+      .metric-row span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
       .metric-icon {
-        --mdc-icon-size: 1em;
+        --mdc-icon-size: clamp(0.86rem, 5.1cqi, 1.1em);
         position: static;
         display: inline-flex;
-        width: 1em;
-        height: 1em;
-        min-width: 1em;
+        width: clamp(0.86rem, 5.1cqi, 1.1em);
+        height: clamp(0.86rem, 5.1cqi, 1.1em);
+        min-width: clamp(0.86rem, 5.1cqi, 1.1em);
         color: currentColor;
       }
       .inline-icon-text {
         display: inline-flex;
         align-items: center;
         gap: 0.35em;
+      }
+      .extra-line {
+        flex: 0 0 auto;
+        margin-top: auto;
+        margin-bottom: 0;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-height: 1.1em;
       }
       .chamber-icon-container {
         position: absolute;
@@ -491,29 +555,29 @@ class ChamberCard extends LitElement {
     const rightButtonsClass = compactLayout ? "buttons-right-container compact-layout" : "buttons-right-container";
     const infoRows = [];
 
-    if (this.config.show_temperature) {
+    if (temperature !== null) {
       infoRows.push(html`
         <div class="metric-row">
           <ha-icon class="metric-icon" icon="mdi:thermometer"></ha-icon>
-          <span>${temperature ? `${temperature}\u00B0` : ""}</span>
+          <span>${temperature}\u00B0</span>
         </div>
       `);
     }
 
-    if (this.config.show_humidity) {
+    if (humidity !== null) {
       infoRows.push(html`
         <div class="metric-row">
           <ha-icon class="metric-icon" icon="mdi:water-percent"></ha-icon>
-          <span>${humidity ? `${humidity}%` : ""}</span>
+          <span>${humidity}%</span>
         </div>
       `);
     }
 
-    if (this.config.show_brightness) {
+    if (brightness !== null) {
       infoRows.push(html`
         <div class="metric-row">
           <ha-icon class="metric-icon" icon="mdi:brightness-6"></ha-icon>
-          <span>${brightness !== null ? `${brightness}%` : ""}</span>
+          <span>${brightness}%</span>
         </div>
       `);
     }
@@ -522,10 +586,22 @@ class ChamberCard extends LitElement {
       <ha-card class="${cardClass}" style="${cardStyle}">
         <div class="${headerClass}">
           <div class="chamber-caption-text" style="${textStyle}">${chamberCaption}</div>
-          <div class="chamber-condition-text" style="${textStyle}">
-            ${this.descriptionContent ? this._renderInlineIconText(this.descriptionContent) : ""}
-            ${infoRows.length ? html`<div class="metric-list">${infoRows}</div>` : ""}
-            ${this.extraLineContent ? html`<div>${this._renderInlineIconText(this.extraLineContent)}</div>` : ""}
+          <div class="header-content">
+            <div class="chamber-condition-text" style="${textStyle}">
+              ${this.descriptionContent
+                ? html`<div class="description-line">${this._renderInlineIconText(this.descriptionContent)}</div>`
+                : ""}
+              ${infoRows.length
+                ? html`
+                    <div class="metrics-slot">
+                      <div class="metric-list">${infoRows}</div>
+                    </div>
+                  `
+                : html`<div class="metrics-slot"></div>`}
+              ${this.extraLineContent
+                ? html`<div class="extra-line">${this._renderInlineIconText(this.extraLineContent)}</div>`
+                : ""}
+            </div>
           </div>
         </div>
         <div
@@ -635,17 +711,27 @@ class ChamberCard extends LitElement {
   }
 
   _getSensorValue(sensorId) {
-    const sensor = this.hass.states[sensorId];
-    if (sensor) {
-      const value = parseFloat(sensor.state);
-      return isNaN(value) ? "--" : Math.round(value);
+    if (!sensorId) {
+      return null;
     }
-    return "--";
+
+    const sensor = this.hass.states[sensorId];
+    if (!sensor || typeof sensor.state !== "string") {
+      return null;
+    }
+
+    const normalizedState = sensor.state.toLowerCase();
+    if (["unknown", "unavailable"].includes(normalizedState)) {
+      return null;
+    }
+
+    const value = parseFloat(sensor.state);
+    return isNaN(value) ? null : Math.round(value);
   }
 
   _getBrightness(brightness) {
-    if (brightness === null || typeof brightness !== "number" || brightness === 0) {
-      return 0;
+    if (brightness === null || typeof brightness !== "number" || brightness <= 0) {
+      return null;
     }
     return Math.max(1, Math.round((brightness / 255) * 100));
   }
