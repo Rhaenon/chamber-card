@@ -1,5 +1,7 @@
 # Chamber Card
 
+![Chamber Card preview](https://raw.githubusercontent.com/Rhaenon/chamber-card/main/assets/preview.png)
+
 A Home Assistant Lovelace card for showing a room, area, or zone as a clean visual control tile with:
 
 - a large central icon
