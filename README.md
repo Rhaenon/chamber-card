@@ -1,5 +1,7 @@
 # Chamber Card
 
+[![Open your Home Assistant instance and open a repository inside HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Rhaenon&repository=chamber-card&category=plugin)
+
 A Home Assistant Lovelace card for showing a room, area, or zone as a clean visual control tile with:
 
 - a large central icon
@@ -10,6 +12,18 @@ A Home Assistant Lovelace card for showing a room, area, or zone as a clean visu
 - navigation on tap and entity control on hold
 
 It works well for living rooms, bedrooms, kitchens, offices, media rooms, hallways, garages, and other spaces where you want both a quick overview and a few useful controls.
+
+## HACS Support
+
+This repository is prepared for HACS custom repository support as a `Dashboard` / `plugin` repository.
+
+Important:
+
+- HACS only works with public GitHub repositories
+- this repository must be public before HACS can install it
+- GitHub releases are recommended so users can install stable versions
+
+If you keep the repository private, HACS will not be able to use it.
 
 ## What This Card Can Do
 
@@ -56,6 +70,22 @@ If the main entity is missing, `unknown`, or `unavailable`:
 This lets the room card stay visible even if one device goes offline.
 
 ## Installation
+
+### HACS custom repository
+
+1. Open HACS
+2. Go to the menu in the top right
+3. Choose `Custom repositories`
+4. Add `https://github.com/Rhaenon/chamber-card`
+5. Select category `Dashboard`
+6. Search for `Chamber Card` in HACS
+7. Download it
+8. Restart Home Assistant if needed
+9. Add the Lovelace resource if HACS does not do it automatically in your setup
+
+You can also use the My Home Assistant button at the top of this README after the repository is public.
+
+### Manual
 
 Copy these files into your Home Assistant `www/community/chamber-card/` folder:
 
@@ -366,6 +396,56 @@ Instead:
 - main hold/toggle is disabled
 
 This makes the card safer to use on dashboards where room cards should stay visible even if devices go offline.
+
+## Releases
+
+This repository is set up so HACS can use GitHub releases.
+
+Recommended release flow:
+
+1. Commit your changes to `main`
+2. Create a Git tag like `v1.0.0`
+3. Publish a GitHub release for that tag
+4. Add short release notes describing what changed
+
+Notes:
+
+- HACS uses GitHub releases when they exist
+- if there are no releases, HACS falls back to the default branch
+- for public installs, releases are the better experience because users can stay on stable versions
+
+Suggested version format:
+
+- `v1.0.0`
+- `v1.1.0`
+- `v1.1.1`
+
+This repository also includes:
+
+- `hacs.json` for HACS metadata
+- a GitHub Actions workflow to validate the repository with HACS rules
+
+The validation workflow currently ignores `description` and `topics` so it will not fail while those GitHub repo settings are still being cleaned up.
+
+Once your GitHub repo description and topics are set, you can remove that ignore list if you want stricter validation.
+
+## GitHub Repo Setup
+
+To make the repository look better in HACS and on GitHub, I recommend these GitHub settings:
+
+- Description:
+  `A customizable Home Assistant Lovelace room card with quick actions, room metrics, compact/full layouts, and graceful unavailable-entity fallback.`
+- Homepage:
+  `https://github.com/Rhaenon/chamber-card`
+- Topics:
+  - `home-assistant`
+  - `hacs`
+  - `lovelace`
+  - `lovelace-card`
+  - `home-assistant-frontend`
+  - `dashboard`
+
+I cannot change those GitHub repository settings directly from this workspace, but the repo contents are now set up for them.
 
 ## Tips
 
