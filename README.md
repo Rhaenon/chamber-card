@@ -11,6 +11,11 @@ A Home Assistant Lovelace card for showing a room, area, or zone as a clean visu
 
 It works well for living rooms, bedrooms, kitchens, offices, media rooms, hallways, garages, and other spaces where you want both a quick overview and a few useful controls.
 
+This card was inspired by the UI Lovelace Minimalist Room card:
+[UI Lovelace Minimalist Room card](https://ui-lovelace-minimalist.github.io/UI/usage/cards/card_room/)
+
+AI was used to help create this card.
+
 ## HACS
 
 This repository supports HACS custom repository usage as a `Dashboard` repository.
