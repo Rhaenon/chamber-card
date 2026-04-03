@@ -1,17 +1,24 @@
-// src/chamber-card.js
-var HaPanelLovelace = customElements.get("ha-panel-lovelace");
-var HuiMasonryView = customElements.get("hui-masonry-view");
-var LitElement = window.LitElement || (HaPanelLovelace ? Object.getPrototypeOf(HaPanelLovelace) : void 0) || (HuiMasonryView ? Object.getPrototypeOf(HuiMasonryView) : void 0);
+const HaPanelLovelace = customElements.get("ha-panel-lovelace");
+const HuiMasonryView = customElements.get("hui-masonry-view");
+const LitElement =
+  window.LitElement ||
+  (HaPanelLovelace ? Object.getPrototypeOf(HaPanelLovelace) : undefined) ||
+  (HuiMasonryView ? Object.getPrototypeOf(HuiMasonryView) : undefined);
+
 if (!LitElement) {
   throw new Error("Chamber Card could not find LitElement in Home Assistant.");
 }
-var html = LitElement.prototype.html;
-var css = LitElement.prototype.css;
-var DEFAULT_ACTIVE_COLOR = "#fcd663";
+
+const html = LitElement.prototype.html;
+const css = LitElement.prototype.css;
+
+const DEFAULT_ACTIVE_COLOR = "#fcd663";
+
 function normalizeButtonMapping(config) {
   if (!config || config.button_mapping_version === 2) {
     return config;
   }
+
   return {
     ...config,
     button4_entity: config.button5_entity || "",
@@ -26,18 +33,20 @@ function normalizeButtonMapping(config) {
     button7_entity: config.button4_entity || "",
     button7_action: config.button4_action || "toggle",
     button7_color: config.button4_color || "",
-    button_mapping_version: 2
+    button_mapping_version: 2,
   };
 }
-var ChamberCard = class extends LitElement {
+
+class ChamberCard extends LitElement {
   static get properties() {
     return {
       hass: {},
       config: {},
       descriptionContent: { type: String },
-      extraLineContent: { type: String }
+      extraLineContent: { type: String },
     };
   }
+
   constructor() {
     super();
     this._holdTimeout = null;
@@ -48,9 +57,11 @@ var ChamberCard = class extends LitElement {
     this._actionTriggered = false;
     this._suppressNextClick = false;
   }
+
   static getConfigElement() {
     return document.createElement("chamber-card-editor");
   }
+
   static getStubConfig() {
     return {
       entity: "sensor.example",
@@ -90,23 +101,28 @@ var ChamberCard = class extends LitElement {
       button7_entity: "",
       button7_action: "more-info",
       button7_color: "",
-      button_mapping_version: 2
+      button_mapping_version: 2,
     };
   }
+
   setConfig(config) {
     const normalizedConfig = normalizeButtonMapping(config);
+
     this.config = {
       active_color: DEFAULT_ACTIVE_COLOR,
       ...normalizedConfig,
-      buttons: normalizedConfig.buttons || Array(7).fill({ entity: "", tap_action: {}, hold_action: {} })
+      buttons: normalizedConfig.buttons || Array(7).fill({ entity: "", tap_action: {}, hold_action: {} }),
     };
   }
+
   getCardSize() {
     return this._isCompactLayout() ? 2 : 3;
   }
+
   _isCompactLayout() {
     return Boolean(this.config?.compact_layout);
   }
+
   static get styles() {
     return css`
       :host {
@@ -440,16 +456,19 @@ var ChamberCard = class extends LitElement {
       }
     `;
   }
+
   connectedCallback() {
     super.connectedCallback();
     this._updateDescription();
   }
+
   updated(changedProps) {
     super.updated(changedProps);
     if (changedProps.has("config")) {
       this._updateDescription();
     }
   }
+
   async _updateDescription() {
     this.descriptionContent = await this._getDescriptionValue(this.config.description_value);
     this.extraLineContent = await this._getDescriptionValue(
@@ -457,10 +476,12 @@ var ChamberCard = class extends LitElement {
       this.config.extra_line_as_entity
     );
   }
+
   async _getDescriptionValue(descriptionValue, isEntity = this.config?.description_as_entity) {
     if (!descriptionValue) {
       return "";
     }
+
     if (isEntity) {
       const entity = this.hass?.states?.[descriptionValue];
       return entity ? entity.state : "";
@@ -476,58 +497,75 @@ var ChamberCard = class extends LitElement {
       return descriptionValue;
     }
   }
+
   _renderInlineIconText(content) {
     if (!content || typeof content !== "string") {
       return content || "";
     }
+
     const iconPattern = /(mdi:[a-z0-9-]+)/gi;
     const matches = [...content.matchAll(iconPattern)];
+
     if (!matches.length) {
       return content;
     }
+
     const parts = [];
     let lastIndex = 0;
+
     matches.forEach((match) => {
       const [icon] = match;
       const index = match.index ?? 0;
+
       if (index > lastIndex) {
         parts.push(content.slice(lastIndex, index));
       }
+
       parts.push(html`<ha-icon class="metric-icon" icon="${icon}"></ha-icon>`);
       lastIndex = index + icon.length;
     });
+
     if (lastIndex < content.length) {
       parts.push(content.slice(lastIndex));
     }
+
     return html`
       <span class="inline-icon-text">
         ${parts}
       </span>
     `;
   }
+
   render() {
     if (!this.hass || !this.config) {
       return html``;
     }
+
     const entityId = this.config.entity;
     const entity = entityId ? this.hass.states[entityId] : null;
     const mainEntityUnavailable = this._isMainEntityUnavailable(entityId, entity);
+
     const chamberCaption = this.config.chamberCaption || "Unnamed";
     const chamberIcon = this.config.chamberIcon || "mdi:sofa";
     const temperature = this.config.show_temperature ? this._getSensorValue(this.config.temperature_entity) : null;
     const humidity = this.config.show_humidity ? this._getSensorValue(this.config.humidity_entity) : null;
-    const brightness = this.config.show_brightness && !mainEntityUnavailable ? this._getBrightness(entity?.attributes?.brightness) : null;
+    const brightness = this.config.show_brightness && !mainEntityUnavailable
+      ? this._getBrightness(entity?.attributes?.brightness)
+      : null;
     const compactLayout = this._isCompactLayout();
     const isEntityActive = mainEntityUnavailable ? false : this._isEntityActive(entity);
     const cardActiveColor = this._getActiveColor(this.config.active_color);
     const cardStyle = isEntityActive ? `background-color: ${this._mixColor(cardActiveColor, 10)};` : "";
     const iconStyle = isEntityActive ? `color: ${cardActiveColor};` : "";
-    const backgroundCircleStyle = isEntityActive ? `background-color: ${this._mixColor(cardActiveColor, 20)};` : "background-color: rgba(221, 221, 221, 0.05);";
+    const backgroundCircleStyle = isEntityActive
+      ? `background-color: ${this._mixColor(cardActiveColor, 20)};`
+      : "background-color: rgba(221, 221, 221, 0.05);";
     const textStyle = isEntityActive ? `color: ${cardActiveColor};` : "";
     const cardClass = compactLayout ? "compact-layout" : "";
     const headerClass = compactLayout ? "header compact-layout" : "header";
     const rightButtonsClass = compactLayout ? "buttons-right-container compact-layout" : "buttons-right-container";
     const infoRows = [];
+
     if (temperature !== null) {
       infoRows.push(html`
         <div class="metric-row">
@@ -536,6 +574,7 @@ var ChamberCard = class extends LitElement {
         </div>
       `);
     }
+
     if (humidity !== null) {
       infoRows.push(html`
         <div class="metric-row">
@@ -544,6 +583,7 @@ var ChamberCard = class extends LitElement {
         </div>
       `);
     }
+
     if (brightness !== null) {
       infoRows.push(html`
         <div class="metric-row">
@@ -552,19 +592,26 @@ var ChamberCard = class extends LitElement {
         </div>
       `);
     }
+
     return html`
       <ha-card class="${cardClass}" style="${cardStyle}">
         <div class="${headerClass}">
           <div class="chamber-caption-text" style="${textStyle}">${chamberCaption}</div>
           <div class="header-content">
             <div class="chamber-condition-text" style="${textStyle}">
-              ${this.descriptionContent ? html`<div class="description-line">${this._renderInlineIconText(this.descriptionContent)}</div>` : ""}
-              ${infoRows.length ? html`
+              ${this.descriptionContent
+                ? html`<div class="description-line">${this._renderInlineIconText(this.descriptionContent)}</div>`
+                : ""}
+              ${infoRows.length
+                ? html`
                     <div class="metrics-slot">
                       <div class="metric-list">${infoRows}</div>
                     </div>
-                  ` : html`<div class="metrics-slot"></div>`}
-              ${this.extraLineContent ? html`<div class="extra-line">${this._renderInlineIconText(this.extraLineContent)}</div>` : ""}
+                  `
+                : html`<div class="metrics-slot"></div>`}
+              ${this.extraLineContent
+                ? html`<div class="extra-line">${this._renderInlineIconText(this.extraLineContent)}</div>`
+                : ""}
             </div>
           </div>
         </div>
@@ -574,15 +621,17 @@ var ChamberCard = class extends LitElement {
           @pointerup="${(e) => this._endHold(e)}"
           @pointercancel="${() => this._cancelHold()}"
           @pointerleave="${() => this._cancelHold()}"
-          @click="${(e) => this._handleTap(e, this.config.navigation_path, "navigate")}"
+          @click="${(e) => this._handleTap(e, this.config.navigation_path, "navigate") }"
         >
           <div class="background-circle" style="${backgroundCircleStyle}">
             <ha-icon icon="${chamberIcon}" style="${iconStyle}"></ha-icon>
-            ${mainEntityUnavailable ? html`
+            ${mainEntityUnavailable
+              ? html`
                   <div class="warning-badge" title="Main entity unavailable">
                     <ha-icon icon="mdi:alert-circle"></ha-icon>
                   </div>
-                ` : html``}
+                `
+              : html``}
           </div>
         </div>
         <div class="${rightButtonsClass}">
@@ -601,13 +650,16 @@ var ChamberCard = class extends LitElement {
       </ha-card>
     `;
   }
+
   _renderRightButton(buttonEntity, buttonAction, buttonColor) {
     if (!buttonEntity || buttonEntity === "") {
       return html``;
     }
+
     const entity = this.hass.states[buttonEntity];
     const isOn = this._isEntityActive(entity);
     const activeColor = this._getActiveColor(buttonColor);
+
     return html`
       <div
         class="right-button-container"
@@ -629,13 +681,16 @@ var ChamberCard = class extends LitElement {
       </div>
     `;
   }
+
   _renderBottomButton(buttonEntity, buttonAction, buttonColor) {
     if (!buttonEntity || buttonEntity === "") {
       return html``;
     }
+
     const entity = this.hass.states[buttonEntity];
     const isOn = this._isEntityActive(entity);
     const activeColor = this._getActiveColor(buttonColor);
+
     return html`
       <div
         class="bottom-button-container"
@@ -657,62 +712,80 @@ var ChamberCard = class extends LitElement {
       </div>
     `;
   }
+
   _getActiveColor(colorValue) {
     return colorValue || this.config?.active_color || DEFAULT_ACTIVE_COLOR;
   }
+
   _mixColor(colorValue, percentage) {
     return `color-mix(in srgb, ${colorValue} ${percentage}%, transparent)`;
   }
+
   _getSensorValue(sensorId) {
     if (!sensorId) {
       return null;
     }
+
     const sensor = this.hass.states[sensorId];
     if (!sensor || typeof sensor.state !== "string") {
       return null;
     }
+
     const normalizedState = sensor.state.toLowerCase();
     if (["unknown", "unavailable"].includes(normalizedState)) {
       return null;
     }
+
     const value = parseFloat(sensor.state);
     return isNaN(value) ? null : Math.round(value);
   }
+
   _getBrightness(brightness) {
     if (brightness === null || typeof brightness !== "number" || brightness <= 0) {
       return null;
     }
-    return Math.max(1, Math.round(brightness / 255 * 100));
+    return Math.max(1, Math.round((brightness / 255) * 100));
   }
+
   _isMainEntityUnavailable(entityId, entity) {
     if (!entityId) {
       return false;
     }
+
     if (!entity || typeof entity.state !== "string") {
       return true;
     }
+
     return ["unavailable", "unknown"].includes(entity.state.toLowerCase());
   }
+
   _isEntityActive(entity) {
     if (!entity || typeof entity.state !== "string") {
       return false;
     }
+
     const normalizedState = entity.state.toLowerCase();
     const domain = entity.entity_id?.split(".")[0];
+
     if (domain === "media_player") {
       return !["off", "unavailable", "unknown"].includes(normalizedState);
     }
+
     if (["person", "device_tracker"].includes(domain)) {
       return normalizedState === "home";
     }
+
     if (["on", "open", "opening", "unlocked", "true", "home"].includes(normalizedState)) {
       return true;
     }
+
     if (["off", "closed", "closing", "locked", "false", "not_home"].includes(normalizedState)) {
       return false;
     }
+
     return false;
   }
+
   _navigate(url) {
     if (url.startsWith("http")) {
       window.open(url, "_blank");
@@ -721,6 +794,7 @@ var ChamberCard = class extends LitElement {
       window.dispatchEvent(new Event("location-changed"));
     }
   }
+
   _startHold(e, buttonEntity) {
     this._cancelHold();
     this._actionTriggered = false;
@@ -729,11 +803,13 @@ var ChamberCard = class extends LitElement {
       if (this._actionTriggered) {
         return;
       }
+
       this._actionTriggered = true;
       this._suppressNextClick = true;
       this._handleHoldAction(this._heldEntity);
     }, this._holdThreshold);
   }
+
   _endHold(e) {
     this._cancelHold();
     if (this._actionTriggered) {
@@ -741,12 +817,14 @@ var ChamberCard = class extends LitElement {
       e.stopPropagation();
     }
   }
+
   _cancelHold() {
     if (this._holdTimeout) {
       clearTimeout(this._holdTimeout);
       this._holdTimeout = null;
     }
   }
+
   _handleTap(e, buttonEntity, buttonAction) {
     if (this._suppressNextClick) {
       e.preventDefault();
@@ -755,6 +833,7 @@ var ChamberCard = class extends LitElement {
       this._actionTriggered = false;
       return;
     }
+
     this._tapCount++;
     if (this._tapCount === 1) {
       this._tapTimeout = setTimeout(() => {
@@ -769,6 +848,7 @@ var ChamberCard = class extends LitElement {
       this._tapCount = 0;
     }
   }
+
   _handleHoldAction(buttonEntity) {
     if (buttonEntity === this.config.entity) {
       if (this._isMainEntityUnavailable(this.config.entity, this.hass?.states?.[this.config.entity])) {
@@ -779,12 +859,15 @@ var ChamberCard = class extends LitElement {
       this._handleAction("more-info", buttonEntity);
     }
   }
+
   _handleAction(action, entityId) {
     console.log("Action received:", action, "for entity:", entityId);
+
     if (!action || typeof action !== "string") {
       console.error("Invalid action:", action);
       return;
     }
+
     switch (action) {
       case "toggle":
         this._toggleEntity(entityId);
@@ -799,18 +882,21 @@ var ChamberCard = class extends LitElement {
         console.error("Unknown action:", action);
     }
   }
+
   _toggleEntity(actionEntityID) {
     if (actionEntityID) {
       this.hass.callService("homeassistant", "toggle", {
-        entity_id: actionEntityID
+        entity_id: actionEntityID,
       });
     }
   }
+
   _showMoreInfo(actionEntityID) {
     console.log("More info for entity:", actionEntityID);
     const event = new Event("hass-more-info", { bubbles: true, composed: true });
     event.detail = { entityId: actionEntityID };
     this.dispatchEvent(event);
   }
-};
+}
+
 customElements.define("chamber-card", ChamberCard);

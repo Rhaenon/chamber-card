@@ -22,3 +22,7 @@ If the Lovelace resource is not added automatically, use:
 - url: /hacsfiles/chamber-card/chamber-card.js
   type: module
 ```
+
+## Development
+
+The editable source lives in `src/`. Root JavaScript files are generated release artifacts for HACS distribution.

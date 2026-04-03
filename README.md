@@ -38,7 +38,7 @@ HACS should normally register the dashboard resource automatically. If it does n
 
 ### Install manually
 
-Copy these files into your Home Assistant `www/community/chamber-card/` folder:
+Copy these release files into your Home Assistant `www/community/chamber-card/` folder:
 
 - `chamber-card.js`
 - `chamber-card-editor.js`
@@ -408,4 +408,15 @@ This makes the card safer to use on dashboards where room cards should stay visi
 - The main card tap action is navigation only
 - Brightness depends on the main entity having a valid `brightness` attribute
 - If `navigation_path` is empty, tapping the main card has no meaningful navigation target
+
+## Development
+
+Editable source files live in `src/`. The root `chamber-card.js` and `chamber-card-editor.js` files are build artifacts intended for release and HACS distribution.
+
+To regenerate the release files:
+
+```bash
+npm install
+npm run build
+```
 
