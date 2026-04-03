@@ -1,6 +1,5 @@
 {
   "name": "Chamber Card",
   "content_in_root": true,
-  "filename": "chamber-card.js",
-  "hide_default_branch": false
+  "filename": "chamber-card.js"
 }
