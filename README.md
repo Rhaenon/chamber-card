@@ -20,8 +20,6 @@ AI was used to help create this card.
 
 ## HACS
 
-This repository supports HACS custom repository usage as a `Dashboard` repository.
-
 ### Install with HACS custom repositories
 
 1. Open HACS in Home Assistant.
@@ -411,11 +409,3 @@ This makes the card safer to use on dashboards where room cards should stay visi
 - Brightness depends on the main entity having a valid `brightness` attribute
 - If `navigation_path` is empty, tapping the main card has no meaningful navigation target
 
-## Support
-
-If you are reporting an issue, it helps to include:
-
-- your card configuration
-- the type of main entity you are using
-- whether compact layout is enabled
-- whether the issue only happens when an entity is unavailable
