@@ -409,14 +409,4 @@ This makes the card safer to use on dashboards where room cards should stay visi
 - Brightness depends on the main entity having a valid `brightness` attribute
 - If `navigation_path` is empty, tapping the main card has no meaningful navigation target
 
-## Development
-
-Editable source files live in `src/`. The root `chamber-card.js` and `chamber-card-editor.js` files are build artifacts intended for release and HACS distribution.
-
-To regenerate the release files:
-
-```bash
-npm install
-npm run build
-```
 
