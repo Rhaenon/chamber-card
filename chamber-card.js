@@ -1,13 +1,54 @@
-// src/chamber-card.js
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+
+// src/chamber-card-editor.js
 var HaPanelLovelace = customElements.get("ha-panel-lovelace");
 var HuiMasonryView = customElements.get("hui-masonry-view");
 var LitElement = window.LitElement || (HaPanelLovelace ? Object.getPrototypeOf(HaPanelLovelace) : void 0) || (HuiMasonryView ? Object.getPrototypeOf(HuiMasonryView) : void 0);
 if (!LitElement) {
-  throw new Error("Chamber Card could not find LitElement in Home Assistant.");
+  throw new Error("Chamber Card editor could not find LitElement in Home Assistant.");
 }
 var html = LitElement.prototype.html;
-var css = LitElement.prototype.css;
-var DEFAULT_ACTIVE_COLOR = "#fcd663";
+var DEFAULT_CONFIG = {
+  chamberCaption: "",
+  chamberIcon: "",
+  navigation_path: "",
+  entity: "",
+  description_as_entity: false,
+  description_value: "",
+  extra_line_as_entity: false,
+  extra_line_value: "",
+  compact_layout: false,
+  active_color: "#fcd663",
+  temperature_entity: "",
+  humidity_entity: "",
+  show_temperature: false,
+  show_humidity: false,
+  show_brightness: false,
+  button1_entity: "",
+  button1_action: "more-info",
+  button1_color: "",
+  button2_entity: "",
+  button2_action: "more-info",
+  button2_color: "",
+  button3_entity: "",
+  button3_action: "more-info",
+  button3_color: "",
+  button4_entity: "",
+  button4_action: "more-info",
+  button4_color: "",
+  button5_entity: "",
+  button5_action: "more-info",
+  button5_color: "",
+  button6_entity: "",
+  button6_action: "more-info",
+  button6_color: "",
+  button7_entity: "",
+  button7_action: "more-info",
+  button7_color: "",
+  button_mapping_version: 2
+};
 function normalizeButtonMapping(config) {
   if (!config || config.button_mapping_version === 2) {
     return config;
@@ -29,7 +70,319 @@ function normalizeButtonMapping(config) {
     button_mapping_version: 2
   };
 }
-var ChamberCard = class extends LitElement {
+var TAP_ACTION_OPTIONS = [
+  { label: "Toggle", value: "toggle" },
+  { label: "More Info", value: "more-info" }
+];
+var ChamberCardEditor = class extends LitElement {
+  constructor() {
+    super();
+    __publicField(this, "_computeLabel", (schema) => schema.label);
+    this._config = { ...DEFAULT_CONFIG };
+  }
+  static get properties() {
+    return {
+      hass: { type: Object },
+      _config: { type: Object }
+    };
+  }
+  setConfig(config) {
+    this._config = { ...DEFAULT_CONFIG, ...normalizeButtonMapping(config) };
+  }
+  _actionSelector() {
+    return {
+      select: {
+        mode: "dropdown",
+        options: TAP_ACTION_OPTIONS
+      }
+    };
+  }
+  render() {
+    if (!this.hass) return html``;
+    if (!this._config) {
+      this._config = { ...DEFAULT_CONFIG };
+    }
+    const schema = [
+      {
+        name: "chamberCaption",
+        type: "string",
+        label: "Name"
+      },
+      {
+        name: "chamberIcon",
+        selector: {
+          icon: {}
+        },
+        label: "Icon"
+      },
+      {
+        name: "navigation_path",
+        type: "string",
+        label: "URL"
+      },
+      {
+        name: "entity",
+        selector: {
+          entity: {}
+        },
+        label: "Entity"
+      },
+      {
+        name: "active_color",
+        type: "string",
+        label: "Card Active Color"
+      },
+      {
+        name: "description_as_entity",
+        type: "boolean",
+        label: "Description - Check for entity state, uncheck for text / template."
+      },
+      this._config.description_as_entity ? {
+        name: "description_value",
+        selector: {
+          entity: {}
+        },
+        label: "Description"
+      } : {
+        name: "description_value",
+        type: "string",
+        label: "Description"
+      },
+      {
+        name: "extra_line_as_entity",
+        type: "boolean",
+        label: "Info - Check for entity state, uncheck for text / template."
+      },
+      this._config.extra_line_as_entity ? {
+        name: "extra_line_value",
+        selector: {
+          entity: {}
+        },
+        label: "Info"
+      } : {
+        name: "extra_line_value",
+        type: "string",
+        label: "Info"
+      },
+      {
+        name: "show_temperature",
+        type: "boolean",
+        label: "Show Temperature"
+      },
+      this._config.show_temperature ? {
+        name: "temperature_entity",
+        selector: {
+          entity: {
+            domain: "sensor"
+          }
+        },
+        label: "Temperature"
+      } : {},
+      {
+        name: "show_humidity",
+        type: "boolean",
+        label: "Show Humidity"
+      },
+      this._config.show_humidity ? {
+        name: "humidity_entity",
+        selector: {
+          entity: {
+            domain: "sensor"
+          }
+        },
+        label: "Humidity"
+      } : {},
+      {
+        name: "show_brightness",
+        type: "boolean",
+        label: "Show Brightness (uses light (group) as card entity)."
+      },
+      {
+        name: "compact_layout",
+        type: "boolean",
+        label: "Compact Layout (3 Buttons)"
+      },
+      {
+        name: "button1_entity",
+        selector: {
+          entity: {}
+        },
+        label: "Button 1 Entity"
+      },
+      {
+        name: "button1_action",
+        selector: this._actionSelector(),
+        label: "Button 1 Tap Action"
+      },
+      {
+        name: "button1_color",
+        type: "string",
+        label: "Button 1 Active Color"
+      },
+      {
+        name: "button2_entity",
+        selector: {
+          entity: {}
+        },
+        label: "Button 2 Entity"
+      },
+      {
+        name: "button2_action",
+        selector: this._actionSelector(),
+        label: "Button 2 Tap Action"
+      },
+      {
+        name: "button2_color",
+        type: "string",
+        label: "Button 2 Active Color"
+      },
+      {
+        name: "button3_entity",
+        selector: {
+          entity: {}
+        },
+        label: "Button 3 Entity"
+      },
+      {
+        name: "button3_action",
+        selector: this._actionSelector(),
+        label: "Button 3 Tap Action"
+      },
+      {
+        name: "button3_color",
+        type: "string",
+        label: "Button 3 Active Color"
+      },
+      ...!this._config.compact_layout ? [
+        {
+          name: "button4_entity",
+          selector: {
+            entity: {}
+          },
+          label: "Button 4 Entity"
+        },
+        {
+          name: "button4_action",
+          selector: this._actionSelector(),
+          label: "Button 4 Tap Action"
+        },
+        {
+          name: "button4_color",
+          type: "string",
+          label: "Button 4 Active Color"
+        },
+        {
+          name: "button5_entity",
+          selector: {
+            entity: {}
+          },
+          label: "Button 5 Entity"
+        },
+        {
+          name: "button5_action",
+          selector: this._actionSelector(),
+          label: "Button 5 Tap Action"
+        },
+        {
+          name: "button5_color",
+          type: "string",
+          label: "Button 5 Active Color"
+        },
+        {
+          name: "button6_entity",
+          selector: {
+            entity: {}
+          },
+          label: "Button 6 Entity"
+        },
+        {
+          name: "button6_action",
+          selector: this._actionSelector(),
+          label: "Button 6 Tap Action"
+        },
+        {
+          name: "button6_color",
+          type: "string",
+          label: "Button 6 Active Color"
+        },
+        {
+          name: "button7_entity",
+          selector: {
+            entity: {}
+          },
+          label: "Button 7 Entity"
+        },
+        {
+          name: "button7_action",
+          selector: this._actionSelector(),
+          label: "Button 7 Tap Action"
+        },
+        {
+          name: "button7_color",
+          type: "string",
+          label: "Button 7 Active Color"
+        }
+      ] : []
+    ];
+    return html`
+      <ha-form
+        .hass=${this.hass}
+        .data=${this._config}
+        .schema=${schema}
+        .computeLabel=${this._computeLabel}
+        @value-changed=${this._valueChanged}
+      ></ha-form>
+    `;
+  }
+  _valueChanged(ev) {
+    if (!this._config || !this.hass) {
+      return;
+    }
+    const config = ev.detail.value;
+    this._config = { ...DEFAULT_CONFIG, ...normalizeButtonMapping(config) };
+    this.dispatchEvent(
+      new CustomEvent("config-changed", {
+        detail: { config: this._config },
+        bubbles: true,
+        composed: true
+      })
+    );
+  }
+};
+customElements.define("chamber-card-editor", ChamberCardEditor);
+
+// src/chamber-card.js
+var HaPanelLovelace2 = customElements.get("ha-panel-lovelace");
+var HuiMasonryView2 = customElements.get("hui-masonry-view");
+var LitElement2 = window.LitElement || (HaPanelLovelace2 ? Object.getPrototypeOf(HaPanelLovelace2) : void 0) || (HuiMasonryView2 ? Object.getPrototypeOf(HuiMasonryView2) : void 0);
+if (!LitElement2) {
+  throw new Error("Chamber Card could not find LitElement in Home Assistant.");
+}
+var html2 = LitElement2.prototype.html;
+var css = LitElement2.prototype.css;
+var DEFAULT_ACTIVE_COLOR = "#fcd663";
+function normalizeButtonMapping2(config) {
+  if (!config || config.button_mapping_version === 2) {
+    return config;
+  }
+  return {
+    ...config,
+    button4_entity: config.button5_entity || "",
+    button4_action: config.button5_action || "toggle",
+    button4_color: config.button5_color || "",
+    button5_entity: config.button6_entity || "",
+    button5_action: config.button6_action || "toggle",
+    button5_color: config.button6_color || "",
+    button6_entity: config.button7_entity || "",
+    button6_action: config.button7_action || "toggle",
+    button6_color: config.button7_color || "",
+    button7_entity: config.button4_entity || "",
+    button7_action: config.button4_action || "toggle",
+    button7_color: config.button4_color || "",
+    button_mapping_version: 2
+  };
+}
+var ChamberCard = class extends LitElement2 {
   static get properties() {
     return {
       hass: {},
@@ -94,7 +447,7 @@ var ChamberCard = class extends LitElement {
     };
   }
   setConfig(config) {
-    const normalizedConfig = normalizeButtonMapping(config);
+    const normalizedConfig = normalizeButtonMapping2(config);
     this.config = {
       active_color: DEFAULT_ACTIVE_COLOR,
       ...normalizedConfig,
@@ -493,13 +846,13 @@ var ChamberCard = class extends LitElement {
       if (index > lastIndex) {
         parts.push(content.slice(lastIndex, index));
       }
-      parts.push(html`<ha-icon class="metric-icon" icon="${icon}"></ha-icon>`);
+      parts.push(html2`<ha-icon class="metric-icon" icon="${icon}"></ha-icon>`);
       lastIndex = index + icon.length;
     });
     if (lastIndex < content.length) {
       parts.push(content.slice(lastIndex));
     }
-    return html`
+    return html2`
       <span class="inline-icon-text">
         ${parts}
       </span>
@@ -507,7 +860,7 @@ var ChamberCard = class extends LitElement {
   }
   render() {
     if (!this.hass || !this.config) {
-      return html``;
+      return html2``;
     }
     const entityId = this.config.entity;
     const entity = entityId ? this.hass.states[entityId] : null;
@@ -529,7 +882,7 @@ var ChamberCard = class extends LitElement {
     const rightButtonsClass = compactLayout ? "buttons-right-container compact-layout" : "buttons-right-container";
     const infoRows = [];
     if (temperature !== null) {
-      infoRows.push(html`
+      infoRows.push(html2`
         <div class="metric-row">
           <ha-icon class="metric-icon" icon="mdi:thermometer"></ha-icon>
           <span>${temperature}\u00B0</span>
@@ -537,7 +890,7 @@ var ChamberCard = class extends LitElement {
       `);
     }
     if (humidity !== null) {
-      infoRows.push(html`
+      infoRows.push(html2`
         <div class="metric-row">
           <ha-icon class="metric-icon" icon="mdi:water-percent"></ha-icon>
           <span>${humidity}%</span>
@@ -545,26 +898,26 @@ var ChamberCard = class extends LitElement {
       `);
     }
     if (brightness !== null) {
-      infoRows.push(html`
+      infoRows.push(html2`
         <div class="metric-row">
           <ha-icon class="metric-icon" icon="mdi:brightness-6"></ha-icon>
           <span>${brightness}%</span>
         </div>
       `);
     }
-    return html`
+    return html2`
       <ha-card class="${cardClass}" style="${cardStyle}">
         <div class="${headerClass}">
           <div class="chamber-caption-text" style="${textStyle}">${chamberCaption}</div>
           <div class="header-content">
             <div class="chamber-condition-text" style="${textStyle}">
-              ${this.descriptionContent ? html`<div class="description-line">${this._renderInlineIconText(this.descriptionContent)}</div>` : ""}
-              ${infoRows.length ? html`
+              ${this.descriptionContent ? html2`<div class="description-line">${this._renderInlineIconText(this.descriptionContent)}</div>` : ""}
+              ${infoRows.length ? html2`
                     <div class="metrics-slot">
                       <div class="metric-list">${infoRows}</div>
                     </div>
-                  ` : html`<div class="metrics-slot"></div>`}
-              ${this.extraLineContent ? html`<div class="extra-line">${this._renderInlineIconText(this.extraLineContent)}</div>` : ""}
+                  ` : html2`<div class="metrics-slot"></div>`}
+              ${this.extraLineContent ? html2`<div class="extra-line">${this._renderInlineIconText(this.extraLineContent)}</div>` : ""}
             </div>
           </div>
         </div>
@@ -578,20 +931,20 @@ var ChamberCard = class extends LitElement {
         >
           <div class="background-circle" style="${backgroundCircleStyle}">
             <ha-icon icon="${chamberIcon}" style="${iconStyle}"></ha-icon>
-            ${mainEntityUnavailable ? html`
+            ${mainEntityUnavailable ? html2`
                   <div class="warning-badge" title="Main entity unavailable">
                     <ha-icon icon="mdi:alert-circle"></ha-icon>
                   </div>
-                ` : html``}
+                ` : html2``}
           </div>
         </div>
         <div class="${rightButtonsClass}">
           ${this._renderRightButton(this.config.button1_entity, this.config.button1_action, this.config.button1_color)}
           ${this._renderRightButton(this.config.button2_entity, this.config.button2_action, this.config.button2_color)}
           ${this._renderRightButton(this.config.button3_entity, this.config.button3_action, this.config.button3_color)}
-          ${compactLayout ? html`` : this._renderRightButton(this.config.button7_entity, this.config.button7_action, this.config.button7_color)}
+          ${compactLayout ? html2`` : this._renderRightButton(this.config.button7_entity, this.config.button7_action, this.config.button7_color)}
         </div>
-        ${compactLayout ? html`` : html`
+        ${compactLayout ? html2`` : html2`
           <div class="buttons-bottom-container">
             ${this._renderBottomButton(this.config.button4_entity, this.config.button4_action, this.config.button4_color)}
             ${this._renderBottomButton(this.config.button5_entity, this.config.button5_action, this.config.button5_color)}
@@ -603,12 +956,12 @@ var ChamberCard = class extends LitElement {
   }
   _renderRightButton(buttonEntity, buttonAction, buttonColor) {
     if (!buttonEntity || buttonEntity === "") {
-      return html``;
+      return html2``;
     }
     const entity = this.hass.states[buttonEntity];
     const isOn = this._isEntityActive(entity);
     const activeColor = this._getActiveColor(buttonColor);
-    return html`
+    return html2`
       <div
         class="right-button-container"
         style="background-color: ${isOn ? this._mixColor(activeColor, 20) : "rgba(221, 221, 221, 0.05)"};"
@@ -631,12 +984,12 @@ var ChamberCard = class extends LitElement {
   }
   _renderBottomButton(buttonEntity, buttonAction, buttonColor) {
     if (!buttonEntity || buttonEntity === "") {
-      return html``;
+      return html2``;
     }
     const entity = this.hass.states[buttonEntity];
     const isOn = this._isEntityActive(entity);
     const activeColor = this._getActiveColor(buttonColor);
-    return html`
+    return html2`
       <div
         class="bottom-button-container"
         style="background-color: ${isOn ? this._mixColor(activeColor, 20) : "rgba(221, 221, 221, 0.05)"};"
@@ -814,3 +1167,10 @@ var ChamberCard = class extends LitElement {
   }
 };
 customElements.define("chamber-card", ChamberCard);
+window.customCards = window.customCards || [];
+window.customCards.push({
+  type: "chamber-card",
+  name: "Chamber Card",
+  description: "A room and area card with status text, sensors, and quick actions.",
+  preview: true
+});

@@ -1,3 +1,5 @@
+import "./chamber-card-editor.js";
+
 const HaPanelLovelace = customElements.get("ha-panel-lovelace");
 const HuiMasonryView = customElements.get("hui-masonry-view");
 const LitElement =
@@ -900,3 +902,11 @@ class ChamberCard extends LitElement {
 }
 
 customElements.define("chamber-card", ChamberCard);
+
+window.customCards = window.customCards || [];
+window.customCards.push({
+  type: "chamber-card",
+  name: "Chamber Card",
+  description: "A room and area card with status text, sensors, and quick actions.",
+  preview: true,
+});

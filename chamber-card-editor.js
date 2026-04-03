@@ -350,10 +350,3 @@ var ChamberCardEditor = class extends LitElement {
   }
 };
 customElements.define("chamber-card-editor", ChamberCardEditor);
-window.customCards = window.customCards || [];
-window.customCards.push({
-  type: "chamber-card",
-  name: "Chamber Card",
-  preview: true,
-  description: "An area/room card with quick settings."
-});
