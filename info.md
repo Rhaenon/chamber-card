@@ -8,7 +8,7 @@ Dashboard card for Home Assistant that displays a room, area, or zone with:
 - quick-action buttons
 - tap navigation and hold-to-toggle support
 
-![Chamber Card preview](https://raw.githubusercontent.com/Rhaenon/chamber-card/main/assets/preview.png)
+![Chamber Card preview](assets/preview.png)
 
 ## HACS
 
